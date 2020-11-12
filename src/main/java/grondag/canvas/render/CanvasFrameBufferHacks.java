@@ -58,7 +58,7 @@ public class CanvasFrameBufferHacks {
 	static int mainFbo = -1;
 	static int mainColor;
 	//	static int mainHDR;
-	static int texEmissive = -1;
+	static int texExtras = -1;
 	static int texEmissiveColor;
 	static int texMainCopy;
 	static int texBloomDownsample;
@@ -75,7 +75,7 @@ public class CanvasFrameBufferHacks {
 	private static void clearAttachments() {
 		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, canvasFboId);
 		GlStateManager.clearColor(0, 0, 0, 0);
-		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texEmissive, 0);
+		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texExtras, 0);
 		GlStateManager.clear(GL21.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
 		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, mainFbo);
 	}
@@ -86,15 +86,15 @@ public class CanvasFrameBufferHacks {
 		clearAttachments();
 	}
 
-	public static void startEmissiveCapture() {
+	public static void startExtrasCapture() {
 		if (!active) {
 			active = true;
 			GL21.glDrawBuffers(ATTACHMENTS_DOUBLE);
-			GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT + 1, GL21.GL_TEXTURE_2D, texEmissive, 0);
+			GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT + 1, GL21.GL_TEXTURE_2D, texExtras, 0);
 		}
 	}
 
-	public static void endEmissiveCapture() {
+	public static void endExtrasCapture() {
 		if (active) {
 			active = false;
 			GL21.glDrawBuffers(FramebufferInfo.COLOR_ATTACHMENT);
@@ -168,7 +168,7 @@ public class CanvasFrameBufferHacks {
 		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texEmissiveColor, 0);
 		GlStateManager.activeTexture(GL21.GL_TEXTURE1);
 		GlStateManager.enableTexture();
-		GlStateManager.bindTexture(texEmissive);
+		GlStateManager.bindTexture(texExtras);
 		emissiveColor.activate().size(w, h);
 		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
 		GlStateManager.bindTexture(0);
@@ -245,7 +245,7 @@ public class CanvasFrameBufferHacks {
 		if ((InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) || InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_RIGHT_SHIFT))) {
 			GlStateManager.bindTexture(texEmissiveColor);
 		} else {
-			GlStateManager.bindTexture(texEmissive);
+			GlStateManager.bindTexture(texExtras);
 		}
 
 		setProjection(w, h);
@@ -311,7 +311,7 @@ public class CanvasFrameBufferHacks {
 			h = mcFbo.textureHeight;
 
 			//			mainHDR = createColorAttachment(w, h, true);
-			texEmissive = createColorAttachment(w, h);
+			texExtras = createColorAttachment(w, h);
 			texEmissiveColor = createColorAttachment(w, h);
 			texMainCopy = createColorAttachment(w, h);
 
@@ -367,14 +367,14 @@ public class CanvasFrameBufferHacks {
 	}
 
 	private static void tearDown() {
-		if (texEmissive != -1) {
-			TextureUtil.deleteId(texEmissive);
+		if (texExtras != -1) {
+			TextureUtil.deleteId(texExtras);
 			TextureUtil.deleteId(texEmissiveColor);
 			//			TextureUtil.deleteId(mainHDR);
 			TextureUtil.deleteId(texMainCopy);
 			TextureUtil.deleteId(texBloomDownsample);
 			TextureUtil.deleteId(texBloomUpsample);
-			texEmissive = -1;
+			texExtras = -1;
 		}
 
 		if (drawBuffer != null) {

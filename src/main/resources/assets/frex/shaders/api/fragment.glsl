@@ -43,6 +43,14 @@ struct frx_FragmentData {
 	float emissivity;
 
 /*
+ * Reflectivity of this fragment in [0.0, 1.0] range.
+ *
+ * Application of reflection is purely non-vanilla and is dependent on
+ * full-frame process shader implementation.
+ */
+	float reflectivity;
+
+/*
  * True if the this fragment should receive diffuse shading.
  * Typical use is to disable directional shading on emissve surfaces.
  *
