@@ -1,0 +1,11 @@
+{
+  "defaultMaterial": "canvas:reflective_top",
+  "variants": {
+    "falling=false": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=true": {
+      "defaultMaterial": "canvas:reflective_top"
+    }
+  }
+}

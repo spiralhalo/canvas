@@ -1,0 +1,29 @@
+{
+  "defaultMaterial": "canvas:reflective_top",
+  "variants": {
+    "falling=false,level=7": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=6": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=5": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=4": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=3": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=2": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=false,level=1": {
+      "defaultMaterial": "canvas:reflective_top"
+    },
+    "falling=true,level=8": {
+      "defaultMaterial": "fabric:standard"
+    }
+  }
+}
