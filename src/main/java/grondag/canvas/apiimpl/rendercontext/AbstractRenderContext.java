@@ -25,11 +25,10 @@ import grondag.canvas.apiimpl.mesh.MutableQuadViewImpl;
 import grondag.canvas.apiimpl.util.ColorHelper;
 import grondag.canvas.buffer.encoding.VertexCollectorList;
 import grondag.canvas.buffer.format.CanvasVertexFormats;
-import grondag.canvas.material.property.MaterialTarget;
-import grondag.canvas.material.property.MaterialTransparency;
 import grondag.canvas.material.state.MaterialFinderImpl;
 import grondag.canvas.mixinterface.Matrix3fExt;
 import grondag.canvas.texture.SpriteInfoTexture;
+import grondag.frex.api.material.MaterialFinder;
 import grondag.frex.api.material.MaterialMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -103,7 +102,7 @@ public abstract class AbstractRenderContext implements RenderContext {
 	}
 
 	void mapMaterials(MutableQuadViewImpl quad) {
-		if (isFluidModel || materialMap == defaultMap) {
+		if (materialMap == defaultMap) {
 			return;
 		}
 
@@ -243,35 +242,35 @@ public abstract class AbstractRenderContext implements RenderContext {
 
 		switch (bm) {
 			case CUTOUT:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(true)
 				.unmipped(true)
-				.translucentCutout(false)
-				.target(MaterialTarget.MAIN)
+				.transparentCutout(false)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			case CUTOUT_MIPPED:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(true)
 				.unmipped(false)
-				.translucentCutout(false)
-				.target(MaterialTarget.MAIN)
+				.transparentCutout(false)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			case TRANSLUCENT:
-				finder.transparency(MaterialTransparency.TRANSLUCENT)
+				finder.transparency(MaterialFinder.TRANSPARENCY_TRANSLUCENT)
 				.cutout(false)
 				.unmipped(false)
-				.translucentCutout(false)
-				.target(MaterialTarget.TRANSLUCENT)
+				.transparentCutout(false)
+				.target(MaterialFinder.TARGET_TRANSLUCENT)
 				.sorted(true);
 				break;
 			case SOLID:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(false)
 				.unmipped(false)
-				.translucentCutout(false)
-				.target(MaterialTarget.MAIN)
+				.transparentCutout(false)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			default:

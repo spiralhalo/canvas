@@ -17,13 +17,7 @@
 package grondag.canvas.material.state;
 
 import grondag.canvas.apiimpl.MaterialConditionImpl;
-import grondag.canvas.material.property.MaterialDecal;
-import grondag.canvas.material.property.MaterialDepthTest;
-import grondag.canvas.material.property.MaterialFog;
-import grondag.canvas.material.property.MaterialTarget;
 import grondag.canvas.material.property.MaterialTextureState;
-import grondag.canvas.material.property.MaterialTransparency;
-import grondag.canvas.material.property.MaterialWriteMask;
 import grondag.canvas.shader.MaterialShaderId;
 import grondag.frex.api.material.MaterialCondition;
 import grondag.frex.api.material.RenderMaterial;
@@ -34,7 +28,7 @@ import net.minecraft.util.Identifier;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V extends AbstractRenderState> extends AbstractRenderStateView{
+public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V extends AbstractRenderState> extends AbstractRenderStateView {
 	protected AbstractStateFinder() {
 		super(AbstractRenderStateView.DEFAULT_BITS);
 	}
@@ -69,12 +63,12 @@ public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V
 		return (T) this;
 	}
 
-	public T transparency(MaterialTransparency transparency) {
+	public T transparency(int transparency) {
 		bits = TRANSPARENCY.setValue(transparency, bits);
 		return (T) this;
 	}
 
-	public T depthTest(MaterialDepthTest depthTest) {
+	public T depthTest(int depthTest) {
 		bits = DEPTH_TEST.setValue(depthTest, bits);
 		return (T) this;
 	}
@@ -84,7 +78,7 @@ public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V
 		return (T) this;
 	}
 
-	public T writeMask(MaterialWriteMask writeMask) {
+	public T writeMask(int writeMask) {
 		bits = WRITE_MASK.setValue(writeMask, bits);
 		return (T) this;
 	}
@@ -94,12 +88,17 @@ public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V
 		return (T) this;
 	}
 
-	public T decal(MaterialDecal decal) {
+	public T decal(int decal) {
 		bits = DECAL.setValue(decal, bits);
 		return (T) this;
 	}
 
-	public T target(MaterialTarget target) {
+	public T discardsTexture(boolean discardsTexture) {
+		bits = DISCARDS_TEXTURE.setValue(discardsTexture, bits);
+		return (T) this;
+	}
+
+	public T target(int target) {
 		bits = TARGET.setValue(target, bits);
 		return (T) this;
 	}
@@ -114,7 +113,7 @@ public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V
 		return (T) this;
 	}
 
-	public T fog(MaterialFog fog) {
+	public T fog(int fog) {
 		bits = FOG.setValue(fog, bits);
 		return (T) this;
 	}
@@ -152,7 +151,7 @@ public abstract class AbstractStateFinder<T extends AbstractStateFinder<T, V>, V
 	/**
 	 * Sets cutout threshold to low value vs default of 50%
 	 */
-	public T translucentCutout(boolean translucentCutout) {
+	public T transparentCutout(boolean translucentCutout) {
 		bits = TRANSLUCENT_CUTOUT.setValue(translucentCutout, bits);
 		return (T) this;
 	}

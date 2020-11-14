@@ -28,6 +28,7 @@ import grondag.canvas.mixin.AccessTexture;
 import grondag.canvas.mixinterface.EntityRenderDispatcherExt;
 import grondag.canvas.mixinterface.MultiPhaseExt;
 import grondag.canvas.mixinterface.RenderLayerExt;
+import grondag.frex.api.material.MaterialFinder;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -107,13 +108,13 @@ public final class RenderLayerHelper {
 		finder.unmipped(!tex.getMipmap());
 		finder.blur(tex.getBilinear());
 		finder.cutout(params.getAlpha() != RenderPhase.ZERO_ALPHA);
-		finder.translucentCutout(params.getAlpha() == RenderPhase.ONE_TENTH_ALPHA);
+		finder.transparentCutout(params.getAlpha() == RenderPhase.ONE_TENTH_ALPHA);
 
 		// vanilla sets these as part of draw process but we don't want special casing
 		if (layer ==  RenderLayer.getSolid() || layer == RenderLayer.getCutoutMipped() || layer == RenderLayer.getCutout() || layer == RenderLayer.getTranslucent()) {
 			finder.cull(true);
 			finder.texture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
-			finder.writeMask(MaterialWriteMask.COLOR_DEPTH);
+			finder.writeMask(MaterialFinder.WRITE_MASK_COLOR_DEPTH);
 			finder.enableLightmap(true);
 			finder.disableAo(false);
 			finder.disableDiffuse(false);

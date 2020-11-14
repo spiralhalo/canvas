@@ -21,13 +21,12 @@ import java.util.function.Supplier;
 
 import grondag.canvas.apiimpl.mesh.MutableQuadViewImpl;
 import grondag.canvas.buffer.encoding.CanvasImmediate;
-import grondag.canvas.material.property.MaterialTarget;
-import grondag.canvas.material.property.MaterialTransparency;
 import grondag.canvas.material.state.MaterialFinderImpl;
 import grondag.canvas.material.state.RenderLayerHelper;
 import grondag.canvas.mixinterface.Matrix3fExt;
 import grondag.canvas.mixinterface.MinecraftClientExt;
 import grondag.fermion.sc.concurrency.SimpleConcurrentList;
+import grondag.frex.api.material.MaterialFinder;
 import grondag.frex.api.material.MaterialMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -259,19 +258,19 @@ public class ItemRenderContext extends AbstractRenderContext implements RenderCo
 
 		switch (bm) {
 			case CUTOUT:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(true)
-				.translucentCutout(false)
+				.transparentCutout(false)
 				.unmipped(true)
-				.target(MaterialTarget.MAIN)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			case CUTOUT_MIPPED:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(true)
-				.translucentCutout(false)
+				.transparentCutout(false)
 				.unmipped(false)
-				.target(MaterialTarget.MAIN)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			case TRANSLUCENT:
@@ -284,19 +283,19 @@ public class ItemRenderContext extends AbstractRenderContext implements RenderCo
 				// 2 has to be finessed because blend mode = TRANSLUCENT doesn't make it clear cutout is needed.
 				// The code below is an ugly hack - need a better way
 
-				finder.transparency(MaterialTransparency.TRANSLUCENT)
+				finder.transparency(MaterialFinder.TRANSPARENCY_TRANSLUCENT)
 				.cutout(!isBlockItem)
-				.translucentCutout(!isBlockItem)
+				.transparentCutout(!isBlockItem)
 				.unmipped(false)
-				.target(drawDirectToMainTarget ? MaterialTarget.MAIN : MaterialTarget.ENTITIES)
+				.target(drawDirectToMainTarget ? MaterialFinder.TARGET_MAIN : MaterialFinder.TARGET_ENTITIES)
 				.sorted(true);
 				break;
 			case SOLID:
-				finder.transparency(MaterialTransparency.NONE)
+				finder.transparency(MaterialFinder.TRANSPARENCY_NONE)
 				.cutout(false)
-				.translucentCutout(false)
+				.transparentCutout(false)
 				.unmipped(false)
-				.target(MaterialTarget.MAIN)
+				.target(MaterialFinder.TARGET_MAIN)
 				.sorted(false);
 				break;
 			default:
