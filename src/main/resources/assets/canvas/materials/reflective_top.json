@@ -1,4 +1,0 @@
-{
-  "vertexSource": "canvas:shaders/material/default.vert",
-  "fragmentSource": "canvas:shaders/material/reflective_top.frag"
-}

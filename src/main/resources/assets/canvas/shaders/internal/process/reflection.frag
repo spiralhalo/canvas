@@ -26,6 +26,10 @@ float getReflectivity(vec2 coords){
 	return texture2DLod(_cvu_extras, coords, 0).g;
 }
 
+vec3 getNormal(vec2 coords){
+	return 2*(texture2DLod(_cvu_normal, coords, 0).xyz - 0.5);
+}
+
 vec4 calcReflection(float depth){
 	// distance determination loop
 	float dist = 0;
@@ -38,13 +42,14 @@ vec4 calcReflection(float depth){
 		dist += sampleUp;
 	}
 
-	float upCoord = _cvv_texcoord.y + dist * 2 + bias + dist;// * wobble;
+	vec3 normal = getNormal(_cvv_texcoord);
+	float upCoord = _cvv_texcoord.y + dist * 2 + bias + dist * normal.y * 2;
 	float groundCoord = _cvv_texcoord.y + dist;
 
 	// side fade determination loop
 	float curSideFadeCheck = 0;
 	float sideFade = 0;
-	//float xWobble = (0.5 - wobble) * (_cvv_texcoord.x - 0.5) * 0.2;
+	float xWobble = normal.x * dist * 2;//(0.5 - wobble) * (_cvv_texcoord.x - 0.5) * 0.2;
 	while(curSideFadeCheck < maxSideFadeCheck){
 		sideFade += (getReflectivity(vec2(_cvv_texcoord.x, groundCoord + curSideFadeCheck)) > 0) ? addSideFade : 0;
 		curSideFadeCheck += sampleUpFade;
@@ -61,7 +66,7 @@ vec4 calcReflection(float depth){
 		return smoothstep(maxDist, 0.0, dist)
 		* smoothstep(1.0, 0.95, upCoord)
 		* smoothstep(1, 0, sideFade * smoothstep(0.0, maxDist, dist))
-		* texture2D(_cvu_base, vec2(_cvv_texcoord.x /*+ xWobble*/, upCoord));
+		* texture2D(_cvu_base, vec2(_cvv_texcoord.x + xWobble, upCoord));
 	}
 }
 

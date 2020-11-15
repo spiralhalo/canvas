@@ -1,0 +1,4 @@
+{
+  "vertexSource": "canvas:shaders/material/water.vert",
+  "fragmentSource": "canvas:shaders/material/water.frag"
+}

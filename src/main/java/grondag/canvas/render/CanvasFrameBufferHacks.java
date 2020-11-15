@@ -54,6 +54,7 @@ public class CanvasFrameBufferHacks {
 	static final ProcessShader downsample = ProcessShaders.create("canvas:shaders/internal/process/downsample", "_cvu_input");
 	static final ProcessShader upsample = ProcessShaders.create("canvas:shaders/internal/process/upsample", "cvu_input", "cvu_prior");
 	static final ProcessShader reflection = ProcessShaders.create("canvas:shaders/internal/process/reflection", "_cvu_base", "_cvu_extras", "_cvu_normal", "_cvu_depth");
+	static final ProcessShader depthNormal = ProcessShaders.create("canvas:shaders/internal/process/debug_depth_normal", "_cvu_normal", "_cvu_depth");
 	static final int[] ATTACHMENTS_TRIPLE = {FramebufferInfo.COLOR_ATTACHMENT, FramebufferInfo.COLOR_ATTACHMENT + 1, FramebufferInfo.COLOR_ATTACHMENT + 2};
 	static Framebuffer mcFbo;
 	static FrameBufferExt mcFboExt;
@@ -287,7 +288,42 @@ public class CanvasFrameBufferHacks {
 
 		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
 
-		// copy result into main fbo
+		// Copy result into main fbo
+		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, mainFbo);
+		copy.activate().size(w, h);
+		GlStateManager.bindTexture(texMainCopy);
+		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
+
+		endCopy();
+	}
+
+	public static void debugDepthNormal() {
+		final long handle = MinecraftClient.getInstance().getWindow().getHandle();
+		boolean depth = (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) || InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_RIGHT_SHIFT));
+
+		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, canvasFboId);
+		startCopy();
+		drawBuffer.bind();
+		RenderSystem.viewport(0, 0, w, h);
+		setProjection(w, h);
+
+		// Draw to copy
+		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texMainCopy, 0);
+		// Reuse uniform
+		if (depth) {
+			depthNormal.activate().size(w, h).intensity(1.0f).distance(1, 512).activate();
+		} else {
+			depthNormal.activate().size(w, h).intensity(0.0f).activate();
+		}
+		GlStateManager.activeTexture(GL21.GL_TEXTURE1);
+		GlStateManager.enableTexture();
+		GlStateManager.bindTexture(mainDepth);
+		GlStateManager.activeTexture(GL21.GL_TEXTURE0);
+		GlStateManager.enableTexture();
+		GlStateManager.bindTexture(texNormal);
+		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
+
+		// Copy result into main fbo
 		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, mainFbo);
 		copy.activate().size(w, h);
 		GlStateManager.bindTexture(texMainCopy);
