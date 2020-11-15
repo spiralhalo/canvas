@@ -28,6 +28,7 @@ import grondag.canvas.mixinterface.FrameBufferExt;
 import grondag.canvas.shader.GlProgram;
 import grondag.canvas.shader.ProcessShader;
 import grondag.canvas.shader.ProcessShaders;
+import net.minecraft.client.render.Camera;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.ARBTextureFloat;
 import org.lwjgl.opengl.GL11;
@@ -233,7 +234,7 @@ public class CanvasFrameBufferHacks {
 		endCopy();
 	}
 
-	public static void applyReflection() {
+	public static void applyReflection(Camera camera) {
 		if (Configurator.enableBufferDebug && BufferDebug.current() == BufferDebug.NORMAL) {
 			final long handle = MinecraftClient.getInstance().getWindow().getHandle();
 
@@ -242,28 +243,34 @@ public class CanvasFrameBufferHacks {
 			}
 		}
 
+		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, canvasFboId);
 		startCopy();
 
 		drawBuffer.bind();
 		setProjection(w, h);
 		RenderSystem.viewport(0, 0, w, h);
 
-		// copy MC fbo color attachment - need it at end for combine step
+		// copy MC fbo color attachment
 		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texMainCopy, 0);
 		GlStateManager.bindTexture(mainColor);
 		copy.activate().size(w, h);
 		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
 
-		// apply reflection shader to main fbo
+		// Switch back to MC fbo to draw combined color + bloom
 		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, mainFbo);
+		RenderSystem.viewport(0, 0, w, h);
+		// Reuse uniform
+		reflection.activate().size(w, h).distance(camera.getPitch(), 0.0f).intensity(0.8f);
+		setProjection(w, h);
+
 		GlStateManager.activeTexture(GL21.GL_TEXTURE1);
 		GlStateManager.enableTexture();
 		GlStateManager.bindTexture(texExtras);
-		reflection.activate();
 
 		// Framebuffer attachment shouldn't draw to self so use copy created earlier
 		GlStateManager.activeTexture(GL21.GL_TEXTURE0);
 		GlStateManager.bindTexture(texMainCopy);
+
 		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
 
 		endCopy();

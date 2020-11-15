@@ -8,7 +8,7 @@
 ******************************************************/
 uniform sampler2D _cvu_base;
 uniform sampler2D _cvu_extras;
-uniform vec3 _camera_view;
+uniform vec2 _cvu_distance;
 uniform float cvu_intensity;
 
 varying vec2 _cvv_texcoord;

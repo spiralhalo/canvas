@@ -809,7 +809,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 		if (Configurator.enableBloom) {
 //			CanvasFrameBufferHacks.applyBloom();
-			CanvasFrameBufferHacks.applyReflection();
+			CanvasFrameBufferHacks.applyReflection(camera);
 		}
 
 		SatinHolder.onWorldRenderedEvent.onWorldRendered(matrixStack, camera, tickDelta, limitTime);
