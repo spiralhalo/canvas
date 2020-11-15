@@ -47,11 +47,12 @@ public class CanvasFrameBufferHacks {
 	}
 
 	static final ProcessShader copy = ProcessShaders.create("canvas:shaders/internal/process/copy", "_cvu_input");
-	static final ProcessShader emissiveColor = ProcessShaders.create("canvas:shaders/internal/process/emissive_color", "_cvu_base", "_cvu_emissive");
+	static final ProcessShader emissiveColor = ProcessShaders.create("canvas:shaders/internal/process/emissive_color", "_cvu_base", "_cvu_extras");
 	static final ProcessShader bloom = ProcessShaders.create("canvas:shaders/internal/process/bloom", "_cvu_base", "_cvu_bloom");
 	static final ProcessShader copyLod = ProcessShaders.create("canvas:shaders/internal/process/copy_lod", "_cvu_input");
 	static final ProcessShader downsample = ProcessShaders.create("canvas:shaders/internal/process/downsample", "_cvu_input");
 	static final ProcessShader upsample = ProcessShaders.create("canvas:shaders/internal/process/upsample", "cvu_input", "cvu_prior");
+	static final ProcessShader reflection = ProcessShaders.create("canvas:shaders/internal/process/reflection", "_cvu_base", "_cvu_extras");
 	static final int[] ATTACHMENTS_DOUBLE = {FramebufferInfo.COLOR_ATTACHMENT, FramebufferInfo.COLOR_ATTACHMENT + 1};
 	static Framebuffer mcFbo;
 	static FrameBufferExt mcFboExt;
@@ -227,6 +228,42 @@ public class CanvasFrameBufferHacks {
 		GlStateManager.activeTexture(GL21.GL_TEXTURE0);
 		GlStateManager.bindTexture(texMainCopy);
 
+		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
+
+		endCopy();
+	}
+
+	public static void applyReflection() {
+		if (Configurator.enableBufferDebug && BufferDebug.current() == BufferDebug.NORMAL) {
+			final long handle = MinecraftClient.getInstance().getWindow().getHandle();
+
+			if (InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) || InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+				return;
+			}
+		}
+
+		startCopy();
+
+		drawBuffer.bind();
+		setProjection(w, h);
+		RenderSystem.viewport(0, 0, w, h);
+
+		// copy MC fbo color attachment - need it at end for combine step
+		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texMainCopy, 0);
+		GlStateManager.bindTexture(mainColor);
+		copy.activate().size(w, h);
+		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
+
+		// apply reflection shader to main fbo
+		GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, mainFbo);
+		GlStateManager.activeTexture(GL21.GL_TEXTURE1);
+		GlStateManager.enableTexture();
+		GlStateManager.bindTexture(texExtras);
+		reflection.activate();
+
+		// Framebuffer attachment shouldn't draw to self so use copy created earlier
+		GlStateManager.activeTexture(GL21.GL_TEXTURE0);
+		GlStateManager.bindTexture(texMainCopy);
 		GlStateManager.drawArrays(GL11.GL_QUADS, 0, 4);
 
 		endCopy();
