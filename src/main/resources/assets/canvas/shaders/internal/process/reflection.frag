@@ -17,57 +17,47 @@ uniform mat4 cvu_inv_projection;
 
 varying vec2 _cvv_texcoord;
 
-float shininess(vec2 coords){
-	return texture2DLod(_cvu_extras, coords, 0).g;
-}
-
-vec3 normal(vec2 coords){
-	return 2 * (texture2DLod(_cvu_normal, coords, 0).xyz - 0.5);
-}
-
-float depth(vec2 uv){
-	return texture2DLod(_cvu_depth, uv, 0).r;
-}
-
 vec2 uvSpace(vec3 viewPos){
 	vec4 clipPos = cvu_projection * vec4(viewPos, 1.0);
 	clipPos.xyz /= clipPos.w;
-	return vec2(clipPos.x, clipPos.y) * 0.5 + 0.5;
+	return clipPos.xy * 0.5 + 0.5;
 }
 
 vec3 viewSpace(vec2 uv) {
 	vec2 clipPos = (uv - 0.5) * 2;
-	vec4 viewPos = cvu_inv_projection * vec4( clipPos.x, clipPos.y, 2.0 * depth(uv) - 1.0, 1.0);
+	vec4 viewPos = cvu_inv_projection * vec4( clipPos.x, clipPos.y, 2.0 * texture2DLod(_cvu_depth, uv, 0).r - 1.0, 1.0);
 	return viewPos.xyz / viewPos.w;
 }
 
-const float step = 0.1;
-const float maxStep = 5000;
+const float stepL = 0.5;
+const int maxStep = 60;
 
 vec4 rayMarch(){
 	vec3 curPos = viewSpace(_cvv_texcoord);
-	vec3 march = reflect(normalize(-curPos), normalize(normal(_cvv_texcoord))) * step;
-	float curStep = 0;
+	float initialZ = curPos.z;
+	vec3 reflected = reflect(normalize(curPos), normalize(2 * (texture2DLod(_cvu_normal, _cvv_texcoord, 0).xyz - 0.5)));
+	// return vec4(reflected, 1.0);
+	vec3 march = reflected * stepL;
+	int curStep = 0;
 	while(curStep < maxStep){
 		curPos += march;
 		vec2 curUV = uvSpace(curPos);
-		if(curPos.z > depth(curUV)){
-			return smoothstep(0.0, 0.05, curUV.x)
-				* smoothstep(1.0, 0.95, curUV.x)
-				* smoothstep(0.0, 0.05, curUV.y)
-				* smoothstep(1.0, 0.95, curUV.y)
+		vec3 texPos = viewSpace(curUV);
+		if(texPos.z < initialZ && texture2DLod(_cvu_extras, curUV, 0).g == 0.0 && curPos.z < texPos.z){
+			return smoothstep(0.5, 0.45, abs(curUV.x - 0.5))
+				* smoothstep(0.5, 0.45, abs(curUV.y - 0.5))
 				* texture2D(_cvu_base, curUV);
 		}
-		curStep += step;
+		curStep ++;
 	}
 	return vec4(0);
 }
 
 void main() {
 	vec4 base = texture2D(_cvu_base, _cvv_texcoord);
-	float shininess = shininess(_cvv_texcoord);
+	float shininess = texture2DLod(_cvu_extras, _cvv_texcoord, 0).g;
 	if (shininess > 0){
-		gl_FragData[0] = base + base * rayMarch() * shininess;
+		gl_FragData[0] = base + rayMarch() * shininess;
 	} else {
 		gl_FragData[0] = base;
 	}
