@@ -119,6 +119,6 @@ void main() {
 #endif
 
 #if TARGET_NORMAL > 0
-	gl_FragData[TARGET_NORMAL].xyz = fragData.vertexNormal * _cvu_normal_model_matrix * vec3(0.5) + vec3(0.5);
+	gl_FragData[TARGET_NORMAL].xyz = (gl_ModelViewMatrix*vec4(fragData.vertexNormal * _cvu_normal_model_matrix, 0.0)).xyz * vec3(0.5) + vec3(0.5);
 #endif
 }

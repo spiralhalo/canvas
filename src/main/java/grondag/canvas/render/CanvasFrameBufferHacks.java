@@ -29,6 +29,7 @@ import grondag.canvas.shader.GlProgram;
 import grondag.canvas.shader.ProcessShader;
 import grondag.canvas.shader.ProcessShaders;
 import net.minecraft.client.render.Camera;
+import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.ARBTextureFloat;
 import org.lwjgl.opengl.GL11;
@@ -253,7 +254,7 @@ public class CanvasFrameBufferHacks {
 		endCopy();
 	}
 
-	public static void applyReflection(Camera camera) {
+	public static void applyReflection(Camera camera, Matrix4f projectionMatrix) {
 		if (Configurator.enableBufferDebug && BufferDebug.current() == BufferDebug.NORMAL) {
 			final long handle = MinecraftClient.getInstance().getWindow().getHandle();
 
@@ -269,10 +270,14 @@ public class CanvasFrameBufferHacks {
 		setProjection(w, h);
 		RenderSystem.viewport(0, 0, w, h);
 
+		// Inverse projection matrix to get view space coordinates
+		Matrix4f invProjection = new Matrix4f(projectionMatrix);
+		invProjection.invert();
+
 		// Draw to copy
 		GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL21.GL_TEXTURE_2D, texMainCopy, 0);
 		// Reuse uniform
-		reflection.activate().size(w, h).distance(camera.getPitch(), 0.0f).intensity(0.8f);
+		reflection.activate().size(w, h).distance(camera.getPitch(), 0.0f).intensity(0.8f).projection(projectionMatrix).invProjection(invProjection);
 
 		GlStateManager.activeTexture(GL21.GL_TEXTURE1);
 		GlStateManager.enableTexture();

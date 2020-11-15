@@ -808,7 +808,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		}
 
 		if (Configurator.enableBloom) {
-			CanvasFrameBufferHacks.applyReflection(camera);
+			CanvasFrameBufferHacks.applyReflection(camera, projectionMatrix);
 			CanvasFrameBufferHacks.applyBloom();
 		}
 
