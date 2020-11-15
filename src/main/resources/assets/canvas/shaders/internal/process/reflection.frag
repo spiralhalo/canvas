@@ -8,6 +8,8 @@
 ******************************************************/
 uniform sampler2D _cvu_base;
 uniform sampler2D _cvu_extras;
+uniform sampler2D _cvu_normal;
+uniform sampler2D _cvu_depth;
 uniform vec2 _cvu_distance;
 uniform float cvu_intensity;
 
@@ -24,7 +26,7 @@ float getReflectivity(vec2 coords){
 	return texture2DLod(_cvu_extras, coords, 0).g;
 }
 
-vec4 calcReflection(){
+vec4 calcReflection(float depth){
 	// distance determination loop
 	float dist = 0;
 	vec2 current = _cvv_texcoord;
@@ -51,7 +53,9 @@ vec4 calcReflection(){
 	// discard reflection of reflective fragment to reduce artifact
 	bool sampledIsReflective = getReflectivity(vec2(_cvv_texcoord.x, upCoord)) > 0;
 
-	if(upCoord > 1.0 || dist > maxDist || sampledIsReflective){
+	bool sampleIsCloser = texture2D(_cvu_depth, vec2(_cvv_texcoord.x, upCoord)).z < depth;
+
+	if(upCoord > 1.0 || dist > maxDist || sampledIsReflective || sampleIsCloser){
 		return vec4(0.0);
 	} else {
 		return smoothstep(maxDist, 0.0, dist)
@@ -61,12 +65,14 @@ vec4 calcReflection(){
 	}
 }
 
+
 void main() {
+	float depth = texture2D(_cvu_depth, _cvv_texcoord).z;
 	float reflectivity = getReflectivity(_cvv_texcoord);
 	vec4 base = texture2D(_cvu_base, _cvv_texcoord);
 
 	if (reflectivity > 0){
-		gl_FragData[0] = base + calcReflection() * cvu_intensity;
+		gl_FragData[0] = base + calcReflection(depth) * cvu_intensity;
 	} else {
 		gl_FragData[0] = base;
 	}

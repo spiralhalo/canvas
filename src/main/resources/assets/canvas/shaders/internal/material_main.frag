@@ -117,4 +117,8 @@ void main() {
 #if TARGET_EXTRAS > 0
 	gl_FragData[TARGET_EXTRAS] = vec4(fragData.emissivity, fragData.reflectivity, 0.0, 1.0);
 #endif
+
+#if TARGET_NORMAL > 0
+	gl_FragData[TARGET_NORMAL].xyz = fragData.vertexNormal * _cvu_normal_model_matrix;
+#endif
 }
