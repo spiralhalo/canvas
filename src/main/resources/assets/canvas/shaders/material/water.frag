@@ -32,7 +32,8 @@ vec3 waterNormal(vec3 pos, float renderTime, float speed, float scale, float amp
 }
 
 void frx_startFragment(inout frx_FragmentData fragData) {
-    fragData.reflectivity = 1.0;
+    // Right now roughness can't be 0 because it will make the skybox glossy
+    fragData.roughness = 0.01;
 
     // Only apply waves to top surface
     if(fragData.vertexNormal.y >= 0.95){
