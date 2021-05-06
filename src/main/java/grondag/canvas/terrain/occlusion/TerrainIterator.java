@@ -50,8 +50,8 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 	public final BuiltRenderRegion[] visibleRegions = new BuiltRenderRegion[CanvasWorldRenderer.MAX_REGION_COUNT];
 	public volatile int visibleRegionCount;
 
-	public final BuiltRenderRegion[] rawRegions = new BuiltRenderRegion[CanvasWorldRenderer.MAX_REGION_COUNT];
-	public volatile int rawRegionCount;
+	public final BuiltRenderRegion[] shadowRegions = new BuiltRenderRegion[CanvasWorldRenderer.MAX_REGION_COUNT];
+	public volatile int shadowRegionCount;
 
 	private final RenderRegionStorage renderRegionStorage;
 	public final TerrainOccluder terrainOccluder;
@@ -93,13 +93,13 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		state.compareAndSet(COMPLETE, IDLE);
 	}
 
-	public void takeResult(final int[] sizeResult, final BuiltRenderRegion[] visibleRegionsTarget, final BuiltRenderRegion[] rawRegionsTarget) {
+	public void takeResult(final int[] sizeResult, final BuiltRenderRegion[] visibleRegionsTarget, final BuiltRenderRegion[] shadowRegionsTarget) {
 		final int size = visibleRegionCount;
-		final int rawSize = rawRegionCount;
+		final int shadowSize = shadowRegionCount;
 		sizeResult[0] = size;
-		sizeResult[1] = rawSize;
+		sizeResult[1] = shadowSize;
 		System.arraycopy(visibleRegions, 0, visibleRegionsTarget, 0, size);
-		System.arraycopy(rawRegions, 0, rawRegionsTarget, 0, rawSize);
+		System.arraycopy(shadowRegions, 0, shadowRegionsTarget, 0, shadowSize);
 	}
 
 	@Override
@@ -111,10 +111,10 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		final int renderDistance = this.renderDistance;
 		final RenderRegionStorage regionStorage = renderRegionStorage;
 		final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-		final BuiltRenderRegion[] rawRegions = this.rawRegions;
+		final BuiltRenderRegion[] rawRegions = this.shadowRegions;
 		final PotentiallyVisibleRegionSorter distanceSorter = this.distanceSorter;
 		int visibleRegionCount = 0;
-		int rawRegionCount = 0;
+		int shadowRegionCount = 0;
 		updateRegions.clear();
 		renderRegionStorage.updateCameraDistanceAndVisibilityInfo(cameraChunkOrigin);
 		final boolean redrawOccluder = terrainOccluder.prepareScene(cameraPos);
@@ -142,6 +142,10 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		} else {
 			cameraRegion.addToPvsIfValid();
 		}
+
+		final int shadowMaxChunksSq = Configurator.shadowMaximumChunks * Configurator.shadowMaximumChunks;
+		final int shadowPaddingChunksSqConfig = Configurator.shadowPaddingChunks * Configurator.shadowPaddingChunks;
+		final int shadowPaddingChunksSq = Math.min(shadowMaxChunksSq, shadowPaddingChunksSqConfig);
 
 		// PERF: look for ways to improve branch prediction
 		while (!cancelled) {
@@ -194,10 +198,10 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 
 			boolean doEnqueue = false;
 			boolean enqueued = false;
-			rawRegions[rawRegionCount++] = builtRegion;
-			// enqueue nearby for raw rendering
-			if (builtRegion.squaredChunkDistance() <= 49) {
+			// enqueue shadow padding area
+			if (builtRegion.squaredChunkDistance() <= shadowPaddingChunksSq) {
 				enqueued = true;
+				rawRegions[shadowRegionCount++] = builtRegion;
 				builtRegion.enqueueUnvistedNeighbors();
 			}
 
@@ -247,6 +251,10 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 
 			if (doEnqueue && !enqueued) {
 				enqueued = true;
+				// visible regions are also rendered in shadow
+				if (builtRegion.squaredChunkDistance() <= shadowMaxChunksSq) {
+					rawRegions[shadowRegionCount++] = builtRegion;
+				}
 				builtRegion.enqueueUnvistedNeighbors();
 			}
 		}
@@ -254,12 +262,12 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		if (cancelled) {
 			state.set(IDLE);
 			this.visibleRegionCount = 0;
-			this.rawRegionCount = 0;
+			this.shadowRegionCount = 0;
 		} else {
 			assert state.get() == RUNNING;
 			state.set(COMPLETE);
 			this.visibleRegionCount = visibleRegionCount;
-			this.rawRegionCount = rawRegionCount;
+			this.shadowRegionCount = shadowRegionCount;
 
 			if (Configurator.debugOcclusionRaster) {
 				terrainOccluder.outputRaster();

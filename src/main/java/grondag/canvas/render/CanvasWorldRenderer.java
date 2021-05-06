@@ -141,7 +141,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 	 */
 	private final AtomicInteger regionDataVersion = new AtomicInteger();
 	private final BuiltRenderRegion[] visibleRegions = new BuiltRenderRegion[MAX_REGION_COUNT];
-	private final BuiltRenderRegion[] rawRegions = new BuiltRenderRegion[MAX_REGION_COUNT];
+	private final BuiltRenderRegion[] shadowRegions = new BuiltRenderRegion[MAX_REGION_COUNT];
 	private final WorldRendererExt wr;
 	private boolean terrainSetupOffThread = Configurator.terrainSetupOffThread;
 	private RenderRegionBuilder regionBuilder;
@@ -295,8 +295,8 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 			if (state == TerrainIterator.COMPLETE) {
 				final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-				final BuiltRenderRegion[] rawRegions = this.rawRegions;
-				terrainIterator.takeResult(regionCount, visibleRegions, rawRegions);
+				final BuiltRenderRegion[] shadowRegions = this.shadowRegions;
+				terrainIterator.takeResult(regionCount, visibleRegions, shadowRegions);
 
 				assert regionCount[0] == 0 || visibleRegions[0] != null;
 				scheduleOrBuild(terrainIterator.updateRegions);
@@ -321,8 +321,8 @@ public class CanvasWorldRenderer extends WorldRenderer {
 				terrainIterator.accept(null);
 
 				final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-				final BuiltRenderRegion[] rawRegions = this.rawRegions;
-				terrainIterator.takeResult(regionCount, visibleRegions, rawRegions);
+				final BuiltRenderRegion[] shadowRegions = this.shadowRegions;
+				terrainIterator.takeResult(regionCount, visibleRegions, shadowRegions);
 
 				lastViewVersion = terrainFrustum.viewVersion();
 				scheduleOrBuild(terrainIterator.updateRegions);
@@ -615,7 +615,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 			profileSwap(profiler, ProfilerGroup.EndWorld, "terrain_solid");
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(false, false, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(false, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			profileSwap(profiler, ProfilerGroup.EndWorld, "entity_draw_solid");
@@ -729,7 +729,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 			immediate.draw();
 
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(false, true, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(true, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			// NB: vanilla renders tripwire here but we combine into translucent
@@ -744,7 +744,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		} else {
 			profileSwap(profiler, ProfilerGroup.EndWorld, "translucent");
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(false, true, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(true, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			// without fabulous transparency important that lines
@@ -988,9 +988,9 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		mc.getProfiler().pop();
 	}
 
-	void renderTerrainLayer(boolean isRaw, boolean isTranslucent, double x, double y, double z) {
-		final BuiltRenderRegion[] visibleRegions = isRaw ? this.rawRegions : this.visibleRegions;
-		final int visibleRegionCount = isRaw ? this.regionCount[1] : this.regionCount[0];
+	void renderTerrainLayer(boolean isTranslucent, double x, double y, double z) {
+		final BuiltRenderRegion[] visibleRegions = SkyShadowRenderer.isActive() ? this.shadowRegions : this.visibleRegions;
+		final int visibleRegionCount = SkyShadowRenderer.isActive() ? this.regionCount[1] : this.regionCount[0];
 
 		if (visibleRegionCount == 0) {
 			return;

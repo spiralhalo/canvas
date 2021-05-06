@@ -111,7 +111,7 @@ public final class RenderState extends AbstractRenderState {
 		// WIP: disable decal renders in depth pass
 		decal.enable();
 
-		CULL_STATE.setEnabled(cull);
+		CULL_STATE.setEnabled(false);
 		LIGHTMAP_STATE.setEnabled(true);
 		LINE_STATE.setEnabled(lines);
 

@@ -25,6 +25,10 @@ class ConfigData {
 	public String pipelineId = PipelineConfig.DEFAULT_ID.toString();
 	@Comment("Glow effect around light sources.")
 	public boolean wavyGrass = true;
+	@Comment("Shadow render distance regardless of visibility.")
+	int shadowPaddingChunks = 8;
+	@Comment("Maximum shadow render distance of visible objects.")
+	int shadowMaximumChunks = 8;
 	@Comment("Enable rendering of internal buffers for debug purposes. Off by default to prevent accidental activation.")
 	public boolean enableBufferDebug = false;
 	@Comment("Output load/reload trace data to log. Will have performance impact.")

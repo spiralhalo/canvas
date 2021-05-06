@@ -17,7 +17,11 @@
 package grondag.canvas.render;
 
 import com.mojang.blaze3d.platform.FramebufferInfo;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import grondag.canvas.material.state.RenderState;
+import net.minecraft.client.render.RenderPhase;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL46;
 
 import net.minecraft.client.MinecraftClient;
@@ -77,7 +81,7 @@ public class SkyShadowRenderer {
 
 		// WIP: will need purpose-specific methods for each frustum/render type
 		MatrixState.set(MatrixState.REGION);
-		canvasWorldRenderer.renderTerrainLayer(true, false, cameraX, cameraY, cameraZ);
+		canvasWorldRenderer.renderTerrainLayer(false, cameraX, cameraY, cameraZ);
 		MatrixState.set(MatrixState.CAMERA);
 
 		if (Pipeline.config().skyShadow.allowEntities && MinecraftClient.getInstance().options.entityShadows) {

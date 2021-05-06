@@ -30,6 +30,8 @@ public class Configurator {
 	public static String pipelineId = DEFAULTS.pipelineId;
 	public static boolean blendFluidColors = DEFAULTS.blendFluidColors;
 	public static boolean wavyGrass = DEFAULTS.wavyGrass;
+	public static int shadowPaddingChunks = DEFAULTS.shadowPaddingChunks;
+	public static int shadowMaximumChunks = DEFAULTS.shadowMaximumChunks;
 	// public static boolean lightmapNoise = DEFAULTS.lightmapNoise;
 	public static boolean lightSmoothing = DEFAULTS.lightSmoothing;
 	//public static boolean moreLightmap = DEFAULTS.moreLightmap;
@@ -95,6 +97,8 @@ public class Configurator {
 
 		blendFluidColors = config.blendFluidColors;
 		wavyGrass = config.wavyGrass;
+		shadowPaddingChunks = config.shadowPaddingChunks;
+		shadowMaximumChunks = config.shadowMaximumChunks;
 
 		shaderDebug = config.shaderDebug;
 		//maxLightmapDelayFrames = config.maxLightmapDelayFrames;
@@ -147,6 +151,8 @@ public class Configurator {
 		config.pipelineId = pipelineId;
 		config.blendFluidColors = blendFluidColors;
 		config.wavyGrass = wavyGrass;
+		config.shadowPaddingChunks = shadowPaddingChunks;
+		config.shadowMaximumChunks = shadowMaximumChunks;
 
 		config.shaderDebug = shaderDebug;
 		//config.maxLightmapDelayFrames = maxLightmapDelayFrames;

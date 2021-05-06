@@ -18,45 +18,7 @@ package grondag.canvas.config;
 
 import static grondag.canvas.config.ConfigManager.DEFAULTS;
 import static grondag.canvas.config.ConfigManager.parse;
-import static grondag.canvas.config.Configurator.batchedChunkRender;
-import static grondag.canvas.config.Configurator.blendFluidColors;
-import static grondag.canvas.config.Configurator.clampExteriorVertices;
-import static grondag.canvas.config.Configurator.conciseErrors;
-import static grondag.canvas.config.Configurator.cullEntityRender;
-import static grondag.canvas.config.Configurator.cullParticles;
-import static grondag.canvas.config.Configurator.debugNativeMemoryAllocation;
-import static grondag.canvas.config.Configurator.debugOcclusionBoxes;
-import static grondag.canvas.config.Configurator.debugOcclusionRaster;
-import static grondag.canvas.config.Configurator.displayRenderProfiler;
-import static grondag.canvas.config.Configurator.dynamicFrustumPadding;
-import static grondag.canvas.config.Configurator.enableBufferDebug;
-import static grondag.canvas.config.Configurator.enableLifeCycleDebug;
-import static grondag.canvas.config.Configurator.enableVao;
-import static grondag.canvas.config.Configurator.fixLuminousBlockShading;
-import static grondag.canvas.config.Configurator.forceJmxModelLoading;
-import static grondag.canvas.config.Configurator.greedyRenderThread;
-import static grondag.canvas.config.Configurator.lightSmoothing;
-import static grondag.canvas.config.Configurator.logGlStateChanges;
-import static grondag.canvas.config.Configurator.logMachineInfo;
-import static grondag.canvas.config.Configurator.logMaterials;
-import static grondag.canvas.config.Configurator.logMissingUniforms;
-import static grondag.canvas.config.Configurator.logRenderLagSpikes;
-import static grondag.canvas.config.Configurator.pipelineId;
-import static grondag.canvas.config.Configurator.preventDepthFighting;
-import static grondag.canvas.config.Configurator.profilerDetailLevel;
-import static grondag.canvas.config.Configurator.profilerOverlayScale;
-import static grondag.canvas.config.Configurator.reduceResolutionOnMac;
-import static grondag.canvas.config.Configurator.reload;
-import static grondag.canvas.config.Configurator.renderLagSpikeFps;
-import static grondag.canvas.config.Configurator.safeNativeMemoryAllocation;
-import static grondag.canvas.config.Configurator.semiFlatLighting;
-import static grondag.canvas.config.Configurator.shaderDebug;
-import static grondag.canvas.config.Configurator.staticFrustumPadding;
-import static grondag.canvas.config.Configurator.terrainSetupOffThread;
-import static grondag.canvas.config.Configurator.traceOcclusionEdgeCases;
-import static grondag.canvas.config.Configurator.traceOcclusionOutcomes;
-import static grondag.canvas.config.Configurator.vertexControlMode;
-import static grondag.canvas.config.Configurator.wavyGrass;
+import static grondag.canvas.config.Configurator.*;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -148,6 +110,20 @@ public class ConfigGui {
 					wavyGrass = b;
 				})
 				.build());
+
+		features.addEntry(ENTRY_BUILDER
+			.startIntSlider(new TranslatableText("config.canvas.value.shadow_padding_chunks"), shadowPaddingChunks, 0, 32)
+			.setDefaultValue(DEFAULTS.shadowPaddingChunks)
+			.setTooltip(parse("config.canvas.help.shadow_padding_chunks"))
+			.setSaveConsumer(b -> shadowPaddingChunks = b)
+			.build());
+
+		features.addEntry(ENTRY_BUILDER
+			.startIntSlider(new TranslatableText("config.canvas.value.shadow_maximum_chunks"), shadowMaximumChunks, 1, 32)
+			.setDefaultValue(DEFAULTS.shadowMaximumChunks)
+			.setTooltip(parse("config.canvas.help.shadow_maximum_chunks"))
+			.setSaveConsumer(b -> shadowMaximumChunks = b)
+			.build());
 
 		// LIGHTING
 		final ConfigCategory lighting = builder.getOrCreateCategory(new TranslatableText("config.canvas.category.lighting"));
