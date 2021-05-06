@@ -192,14 +192,17 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 				continue;
 			}
 
+			boolean doEnqueue = false;
+			boolean enqueued = false;
 			rawRegions[rawRegionCount++] = builtRegion;
+			// enqueue nearby for raw rendering
+			if (builtRegion.squaredChunkDistance() <= 49) {
+				enqueued = true;
+				builtRegion.enqueueUnvistedNeighbors();
+			}
 
 			// don't visit if not in frustum and within render distance
 			if (!builtRegion.isInFrustum()) {
-				// enqueue nearby for raw rendering
-				if (builtRegion.isNear()) {
-					builtRegion.enqueueUnvistedNeighbors();
-				}
 				continue;
 			}
 
@@ -216,7 +219,8 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 			} else if (builtRegion.occluderVersion() == occluderVersion) {
 				// reuse prior test results
 				if (builtRegion.occluderResult()) {
-					builtRegion.enqueueUnvistedNeighbors();
+//					builtRegion.enqueueUnvistedNeighbors();
+					doEnqueue = true;
 					visibleRegions[visibleRegionCount++] = builtRegion;
 
 					// will already have been drawn if occluder view version hasn't changed
@@ -229,7 +233,8 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 				terrainOccluder.prepareRegion(builtRegion.getOrigin(), builtRegion.occlusionRange, builtRegion.squaredChunkDistance());
 
 				if (terrainOccluder.isBoxVisible(visData[OcclusionRegion.CULL_DATA_REGION_BOUNDS])) {
-					builtRegion.enqueueUnvistedNeighbors();
+//					builtRegion.enqueueUnvistedNeighbors();
+					doEnqueue = true;
 					visibleRegions[visibleRegionCount++] = builtRegion;
 					builtRegion.setOccluderResult(true, occluderVersion);
 
@@ -238,6 +243,11 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 				} else {
 					builtRegion.setOccluderResult(false, occluderVersion);
 				}
+			}
+
+			if (doEnqueue && !enqueued) {
+				enqueued = true;
+				builtRegion.enqueueUnvistedNeighbors();
 			}
 		}
 
