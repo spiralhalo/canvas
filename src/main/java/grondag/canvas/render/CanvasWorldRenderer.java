@@ -238,9 +238,10 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		regionCount[0] = 0;
 		regionCount[1] = 0;
 		terrainIterator.reset();
+		terrainIterator.clear();
 		renderRegionStorage.clear();
 		Arrays.fill(visibleRegions, null);
-		Arrays.fill(terrainIterator.visibleRegions, null);
+		Arrays.fill(shadowRegions, null);
 		// we don't want to use our collector unless we are in a world
 		((BufferBuilderStorageExt) wr.canvas_bufferBuilders()).canvas_setEntityConsumers(clientWorld == null ? null : worldRenderImmediate);
 		// Mixins mostly disable what this does

@@ -16,9 +16,11 @@
 
 package grondag.canvas.terrain.occlusion;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.render.Camera;
@@ -102,6 +104,13 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		System.arraycopy(shadowRegions, 0, shadowRegionsTarget, 0, shadowSize);
 	}
 
+	public void clear() {
+		visibleRegionCount = 0;
+		shadowRegionCount = 0;
+		Arrays.fill(visibleRegions, null);
+		Arrays.fill(shadowRegions, null);
+	}
+
 	@Override
 	public void accept(TerrainRenderContext ignored) {
 		assert state.get() == READY;
@@ -111,7 +120,7 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		final int renderDistance = this.renderDistance;
 		final RenderRegionStorage regionStorage = renderRegionStorage;
 		final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-		final BuiltRenderRegion[] rawRegions = this.shadowRegions;
+		final BuiltRenderRegion[] shadowRegions = this.shadowRegions;
 		final PotentiallyVisibleRegionSorter distanceSorter = this.distanceSorter;
 		int visibleRegionCount = 0;
 		int shadowRegionCount = 0;
@@ -143,9 +152,8 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 			cameraRegion.addToPvsIfValid();
 		}
 
-		final int shadowMaxChunksSq = Configurator.shadowMaximumChunks * Configurator.shadowMaximumChunks;
-		final int shadowPaddingChunksSqConfig = Configurator.shadowPaddingChunks * Configurator.shadowPaddingChunks;
-		final int shadowPaddingChunksSq = Math.min(shadowMaxChunksSq, shadowPaddingChunksSqConfig);
+		final int shadowMaxChunksSq = Math.min(CanvasWorldRenderer.instance().maxSquaredChunkRenderDistance(), Configurator.shadowMaximumChunks * Configurator.shadowMaximumChunks);
+		final int shadowPaddingChunksSq = Math.min(shadowMaxChunksSq, Configurator.shadowPaddingChunks * Configurator.shadowPaddingChunks);
 
 		// PERF: look for ways to improve branch prediction
 		while (!cancelled) {
@@ -201,7 +209,7 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 			// enqueue shadow padding area
 			if (builtRegion.squaredChunkDistance() <= shadowPaddingChunksSq) {
 				enqueued = true;
-				rawRegions[shadowRegionCount++] = builtRegion;
+				shadowRegions[shadowRegionCount++] = builtRegion;
 				builtRegion.enqueueUnvistedNeighbors();
 			}
 
@@ -253,7 +261,7 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 				enqueued = true;
 				// visible regions are also rendered in shadow
 				if (builtRegion.squaredChunkDistance() <= shadowMaxChunksSq) {
-					rawRegions[shadowRegionCount++] = builtRegion;
+					shadowRegions[shadowRegionCount++] = builtRegion;
 				}
 				builtRegion.enqueueUnvistedNeighbors();
 			}
