@@ -46,12 +46,17 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 	public static final int RUNNING = 2;
 	public static final int COMPLETE = 3;
 	public final SimpleUnorderedArrayList<BuiltRenderRegion> updateRegions = new SimpleUnorderedArrayList<>();
+
 	public final BuiltRenderRegion[] visibleRegions = new BuiltRenderRegion[CanvasWorldRenderer.MAX_REGION_COUNT];
+	public volatile int visibleRegionCount;
+
+	public final BuiltRenderRegion[] rawRegions = new BuiltRenderRegion[CanvasWorldRenderer.MAX_REGION_COUNT];
+	public volatile int rawRegionCount;
+
 	private final RenderRegionStorage renderRegionStorage;
 	public final TerrainOccluder terrainOccluder;
 	private final AtomicInteger state = new AtomicInteger(IDLE);
 	private final PotentiallyVisibleRegionSorter distanceSorter;
-	public volatile int visibleRegionCount;
 	private BuiltRenderRegion cameraRegion;
 	private Vec3d cameraPos;
 	private long cameraChunkOrigin;
@@ -88,6 +93,15 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		state.compareAndSet(COMPLETE, IDLE);
 	}
 
+	public void takeResult(final int[] sizeResult, final BuiltRenderRegion[] visibleRegionsTarget, final BuiltRenderRegion[] rawRegionsTarget) {
+		final int size = visibleRegionCount;
+		final int rawSize = rawRegionCount;
+		sizeResult[0] = size;
+		sizeResult[1] = rawSize;
+		System.arraycopy(visibleRegions, 0, visibleRegionsTarget, 0, size);
+		System.arraycopy(rawRegions, 0, rawRegionsTarget, 0, rawSize);
+	}
+
 	@Override
 	public void accept(TerrainRenderContext ignored) {
 		assert state.get() == READY;
@@ -97,8 +111,10 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		final int renderDistance = this.renderDistance;
 		final RenderRegionStorage regionStorage = renderRegionStorage;
 		final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
+		final BuiltRenderRegion[] rawRegions = this.rawRegions;
 		final PotentiallyVisibleRegionSorter distanceSorter = this.distanceSorter;
 		int visibleRegionCount = 0;
+		int rawRegionCount = 0;
 		updateRegions.clear();
 		renderRegionStorage.updateCameraDistanceAndVisibilityInfo(cameraChunkOrigin);
 		final boolean redrawOccluder = terrainOccluder.prepareScene(cameraPos);
@@ -133,11 +149,6 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 
 			if (builtRegion == null) {
 				break;
-			}
-
-			// don't visit if not in frustum and within render distance
-			if (!builtRegion.isInFrustum()) {
-				continue;
 			}
 
 			// don't visit if region is outside near distance and doesn't have all 4 neighbors loaded
@@ -178,6 +189,17 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 					builtRegion.setOccluderResult(false, occluderVersion);
 				}
 
+				continue;
+			}
+
+			rawRegions[rawRegionCount++] = builtRegion;
+
+			// don't visit if not in frustum and within render distance
+			if (!builtRegion.isInFrustum()) {
+				// enqueue nearby for raw rendering
+				if (builtRegion.isNear()) {
+					builtRegion.enqueueUnvistedNeighbors();
+				}
 				continue;
 			}
 
@@ -222,10 +244,12 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 		if (cancelled) {
 			state.set(IDLE);
 			this.visibleRegionCount = 0;
+			this.rawRegionCount = 0;
 		} else {
 			assert state.get() == RUNNING;
 			state.set(COMPLETE);
 			this.visibleRegionCount = visibleRegionCount;
+			this.rawRegionCount = rawRegionCount;
 
 			if (Configurator.debugOcclusionRaster) {
 				terrainOccluder.outputRaster();

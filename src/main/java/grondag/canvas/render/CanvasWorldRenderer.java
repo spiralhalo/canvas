@@ -141,6 +141,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 	 */
 	private final AtomicInteger regionDataVersion = new AtomicInteger();
 	private final BuiltRenderRegion[] visibleRegions = new BuiltRenderRegion[MAX_REGION_COUNT];
+	private final BuiltRenderRegion[] rawRegions = new BuiltRenderRegion[MAX_REGION_COUNT];
 	private final WorldRendererExt wr;
 	private boolean terrainSetupOffThread = Configurator.terrainSetupOffThread;
 	private RenderRegionBuilder regionBuilder;
@@ -152,7 +153,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 	private Vec3d cameraPos;
 	private int lastRegionDataVersion = -1;
 	private int lastViewVersion = -1;
-	private int visibleRegionCount = 0;
+	private int[] regionCount = new int[2];
 	final TerrainLayerRenderer TRANSLUCENT = new TerrainLayerRenderer("translucemt", this::sortTranslucentTerrain);
 
 	private final RenderContextState contextState = new RenderContextState();
@@ -233,7 +234,8 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 		// DitherTexture.instance().initializeIfNeeded();
 		world = clientWorld;
-		visibleRegionCount = 0;
+		regionCount[0] = 0;
+		regionCount[1] = 0;
 		terrainIterator.reset();
 		renderRegionStorage.clear();
 		Arrays.fill(visibleRegions, null);
@@ -292,10 +294,10 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 			if (state == TerrainIterator.COMPLETE) {
 				final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-				final int size = terrainIterator.visibleRegionCount;
-				visibleRegionCount = size;
-				System.arraycopy(terrainIterator.visibleRegions, 0, visibleRegions, 0, size);
-				assert size == 0 || visibleRegions[0] != null;
+				final BuiltRenderRegion[] rawRegions = this.rawRegions;
+				terrainIterator.takeResult(regionCount, visibleRegions, rawRegions);
+
+				assert regionCount[0] == 0 || visibleRegions[0] != null;
 				scheduleOrBuild(terrainIterator.updateRegions);
 				terrainIterator.reset();
 				state = TerrainIterator.IDLE;
@@ -318,10 +320,10 @@ public class CanvasWorldRenderer extends WorldRenderer {
 				terrainIterator.accept(null);
 
 				final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-				final int size = terrainIterator.visibleRegionCount;
+				final BuiltRenderRegion[] rawRegions = this.rawRegions;
+				terrainIterator.takeResult(regionCount, visibleRegions, rawRegions);
+
 				lastViewVersion = terrainFrustum.viewVersion();
-				visibleRegionCount = size;
-				System.arraycopy(terrainIterator.visibleRegions, 0, visibleRegions, 0, size);
 				scheduleOrBuild(terrainIterator.updateRegions);
 				terrainIterator.reset();
 			}
@@ -538,7 +540,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		SkyShadowRenderer.restoreEntityShadows(mc);
 
 		profileSwap(profiler, ProfilerGroup.StartWorld, "blockentities");
-		final int visibleRegionCount = this.visibleRegionCount;
+		final int visibleRegionCount = this.regionCount[0];
 		final Set<BlockEntity> noCullingBlockEntities = wr.canvas_noCullingBlockEntities();
 
 		for (int regionIndex = 0; regionIndex < visibleRegionCount; ++regionIndex) {
@@ -601,7 +603,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 			profileSwap(profiler, ProfilerGroup.EndWorld, "terrain_solid");
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(false, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(false, false, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			profileSwap(profiler, ProfilerGroup.EndWorld, "entity_draw_solid");
@@ -715,7 +717,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 			immediate.draw();
 
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(true, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(false, true, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			// NB: vanilla renders tripwire here but we combine into translucent
@@ -730,7 +732,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		} else {
 			profileSwap(profiler, ProfilerGroup.EndWorld, "translucent");
 			MatrixState.set(MatrixState.REGION);
-			renderTerrainLayer(true, cameraX, cameraY, cameraZ);
+			renderTerrainLayer(false, true, cameraX, cameraY, cameraZ);
 			MatrixState.set(MatrixState.CAMERA);
 
 			// without fabulous transparency important that lines
@@ -964,7 +966,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 			int j = 0;
 
-			for (int regionIndex = 0; regionIndex < visibleRegionCount; regionIndex++) {
+			for (int regionIndex = 0; regionIndex < regionCount[0]; regionIndex++) {
 				if (j < 15 && visibleRegions[regionIndex].scheduleSort()) {
 					++j;
 				}
@@ -974,9 +976,9 @@ public class CanvasWorldRenderer extends WorldRenderer {
 		mc.getProfiler().pop();
 	}
 
-	void renderTerrainLayer(boolean isTranslucent, double x, double y, double z) {
-		final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-		final int visibleRegionCount = this.visibleRegionCount;
+	void renderTerrainLayer(boolean isRaw, boolean isTranslucent, double x, double y, double z) {
+		final BuiltRenderRegion[] visibleRegions = isRaw ? this.rawRegions : this.visibleRegions;
+		final int visibleRegionCount = isRaw ? this.regionCount[1] : this.regionCount[0];
 
 		if (visibleRegionCount == 0) {
 			return;
@@ -1225,7 +1227,8 @@ public class CanvasWorldRenderer extends WorldRenderer {
 
 		renderRegionStorage.clear();
 		distanceSorter.clear();
-		visibleRegionCount = 0;
+		regionCount[0] = 0;
+		regionCount[1] = 0;
 		terrainFrustum.reload();
 
 		//ClassInspector.inspect();
@@ -1240,7 +1243,7 @@ public class CanvasWorldRenderer extends WorldRenderer {
 	public int getCompletedChunkCount() {
 		int result = 0;
 		final BuiltRenderRegion[] visibleRegions = this.visibleRegions;
-		final int limit = visibleRegionCount;
+		final int limit = regionCount[0];
 
 		for (int i = 0; i < limit; i++) {
 			final BuiltRenderRegion region = visibleRegions[i];

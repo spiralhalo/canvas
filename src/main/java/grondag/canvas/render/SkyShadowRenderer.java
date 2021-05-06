@@ -77,7 +77,7 @@ public class SkyShadowRenderer {
 
 		// WIP: will need purpose-specific methods for each frustum/render type
 		MatrixState.set(MatrixState.REGION);
-		canvasWorldRenderer.renderTerrainLayer(false, cameraX, cameraY, cameraZ);
+		canvasWorldRenderer.renderTerrainLayer(true, false, cameraX, cameraY, cameraZ);
 		MatrixState.set(MatrixState.CAMERA);
 
 		if (Pipeline.config().skyShadow.allowEntities && MinecraftClient.getInstance().options.entityShadows) {
