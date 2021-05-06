@@ -127,6 +127,9 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 			cameraRegion.addToPvsIfValid();
 		}
 
+		final int maxShadowChunksSq = Math.min(CanvasWorldRenderer.instance().maxSquaredChunkRenderDistance(), Configurator.shadowMaximumChunksSq);
+		final int shadowPaddingChunksSq = Math.min(maxShadowChunksSq, Configurator.shadowPaddingChunksSq);
+
 		// PERF: look for ways to improve branch prediction
 		while (!cancelled) {
 			final BuiltRenderRegion builtRegion = distanceSorter.next();
@@ -135,8 +138,8 @@ public class TerrainIterator implements Consumer<TerrainRenderContext> {
 				break;
 			}
 
-			// don't visit if not in frustum and within render distance
-			if (!builtRegion.isInFrustum()) {
+			// don't visit if not in frustum and within render distance or shadow padding distance
+			if (!builtRegion.isInFrustum() && builtRegion.squaredChunkDistance() > shadowPaddingChunksSq) {
 				continue;
 			}
 

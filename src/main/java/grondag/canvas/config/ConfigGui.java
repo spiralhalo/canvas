@@ -51,6 +51,10 @@ import static grondag.canvas.config.Configurator.renderLagSpikeFps;
 import static grondag.canvas.config.Configurator.safeNativeMemoryAllocation;
 import static grondag.canvas.config.Configurator.semiFlatLighting;
 import static grondag.canvas.config.Configurator.shaderDebug;
+import static grondag.canvas.config.Configurator.shadowMaximumChunks;
+import static grondag.canvas.config.Configurator.shadowMaximumChunksSq;
+import static grondag.canvas.config.Configurator.shadowPaddingChunks;
+import static grondag.canvas.config.Configurator.shadowPaddingChunksSq;
 import static grondag.canvas.config.Configurator.staticFrustumPadding;
 import static grondag.canvas.config.Configurator.terrainSetupOffThread;
 import static grondag.canvas.config.Configurator.traceOcclusionEdgeCases;
@@ -148,6 +152,26 @@ public class ConfigGui {
 					wavyGrass = b;
 				})
 				.build());
+
+		features.addEntry(ENTRY_BUILDER
+			.startIntSlider(new TranslatableText("config.canvas.value.shadow_padding_chunks"), shadowPaddingChunks, 0, 32)
+			.setDefaultValue(DEFAULTS.shadowPaddingChunks)
+			.setTooltip(parse("config.canvas.help.shadow_padding_chunks"))
+			.setSaveConsumer(b -> {
+				shadowPaddingChunks = b;
+				shadowPaddingChunksSq = b * b;
+			})
+			.build());
+
+		features.addEntry(ENTRY_BUILDER
+			.startIntSlider(new TranslatableText("config.canvas.value.shadow_maximum_chunks"), shadowMaximumChunks, 1, 32)
+			.setDefaultValue(DEFAULTS.shadowMaximumChunks)
+			.setTooltip(parse("config.canvas.help.shadow_maximum_chunks"))
+			.setSaveConsumer(b -> {
+				shadowMaximumChunks = b;
+				shadowMaximumChunksSq = b * b;
+			})
+			.build());
 
 		// LIGHTING
 		final ConfigCategory lighting = builder.getOrCreateCategory(new TranslatableText("config.canvas.category.lighting"));

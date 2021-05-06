@@ -178,7 +178,7 @@ public class BuiltRenderRegion {
 	}
 
 	/**
-	 * Result is computed in {@link #updateCameraDistanceAndVisibilityInfo(RenderRegionPruner)}.
+	 * Result is computed in {@link #updateCameraDistanceAndVisibilityInfo()}.
 	 *
 	 * <p>NB: tried a crude hierarchical scheme of checking chunk columns first
 	 * but didn't pay off.  Would probably  need to propagate per-plane results
@@ -220,9 +220,11 @@ public class BuiltRenderRegion {
 	private void computeDistanceChecks() {
 		final int cy = storage.cameraChunkY() - chunkY;
 		final int horizontalSquaredDistance = renderRegionChunk.horizontalSquaredDistance;
+		final int maxShadowChunksSq = Math.min(cwr.maxSquaredChunkRenderDistance(), Configurator.shadowMaximumChunksSq);
+		final int shadowPaddingChunksSq = Math.min(maxShadowChunksSq, Configurator.shadowPaddingChunksSq);
 		isInsideRenderDistance = horizontalSquaredDistance <= cwr.maxSquaredChunkRenderDistance();
 		squaredChunkDistance = horizontalSquaredDistance + cy * cy;
-		isNear = squaredChunkDistance <= 3;
+		isNear = squaredChunkDistance <= 3 || squaredChunkDistance <= shadowPaddingChunksSq;
 		occlusionRange = PackedBox.rangeFromSquareChunkDist(squaredChunkDistance);
 	}
 
@@ -748,7 +750,7 @@ public class BuiltRenderRegion {
 	 * to chunk center from camera < 768.0.  Ours will always return true for all 26 chunks adjacent
 	 * (including diagonal) to the achunk containing the camera.
 	 *
-	 * <p>This logic is in {@link #updateCameraDistanceAndVisibilityInfo(RenderRegionPruner)}.
+	 * <p>This logic is in {@link #updateCameraDistanceAndVisibilityInfo()}.
 	 */
 	public boolean isNear() {
 		return isNear;

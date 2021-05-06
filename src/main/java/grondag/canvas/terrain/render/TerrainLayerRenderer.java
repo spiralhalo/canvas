@@ -71,6 +71,17 @@ public class TerrainLayerRenderer {
 				continue;
 			}
 
+			final boolean shadowCulled;
+			if (SkyShadowRenderer.isActive()) {
+				shadowCulled = builtRegion.squaredChunkDistance() > Configurator.shadowMaximumChunksSq;
+			} else {
+				shadowCulled = !builtRegion.isInFrustum();
+			}
+
+			if (shadowCulled) {
+				continue;
+			}
+
 			final DrawableChunk drawable = isTranslucent ? builtRegion.translucentDrawable() : builtRegion.solidDrawable();
 
 			if (!drawable.isClosed()) {
