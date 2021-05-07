@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.util.shape.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -89,7 +91,7 @@ public class MixinWorldRenderer implements WorldRendererExt {
 		return false;
 	}
 
-	@Shadow private void drawBlockOutline(MatrixStack matrixStack, VertexConsumer vertexConsumer, Entity entity, double d, double e, double f, BlockPos blockPos, BlockState blockState) { }
+	@Shadow private static void drawShapeOutline(MatrixStack matrixStack, VertexConsumer vertexConsumer, VoxelShape voxelShape, double d, double e, double f, float g, float h, float i, float j) {};
 
 	@Shadow private void renderWorldBorder(Camera camera) { }
 
@@ -279,7 +281,7 @@ public class MixinWorldRenderer implements WorldRendererExt {
 
 	@Override
 	public void canvas_drawBlockOutline(MatrixStack matrixStack, VertexConsumer vertexConsumer, Entity entity, double d, double e, double f, BlockPos blockPos, BlockState blockState) {
-		drawBlockOutline(matrixStack, vertexConsumer, entity, d, e, f, blockPos, blockState);
+		drawShapeOutline(matrixStack, vertexConsumer, blockState.getOutlineShape(this.world, blockPos, ShapeContext.of(entity)), (double)blockPos.getX() - d, (double)blockPos.getY() - e, (double)blockPos.getZ() - f, 0.0F, 0.0F, 0.0F, 0.4F);
 	}
 
 	@Override
