@@ -22,16 +22,22 @@ import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 
+import net.minecraft.class_6382;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
-import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.TranslatableText;
 
 public class PipelineOptionsEntry extends TooltipListEntry<Void> {
-	private final AbstractButtonWidget buttonWidget = new AbstractPressableButtonWidget(0, 0, 115, 20, NarratorManager.EMPTY) {
+	private final ClickableWidget buttonWidget = new PressableWidget(0, 0, 115, 20, NarratorManager.EMPTY) {
+		@Override
+		public void method_37020(class_6382 arg) {
+			// TO-DO: Narration text
+		}
+
 		@Override
 		public void onPress() {
 			MinecraftClient.getInstance().openScreen(PipelineOptionGui.display(ConfigGui.pipeline()));

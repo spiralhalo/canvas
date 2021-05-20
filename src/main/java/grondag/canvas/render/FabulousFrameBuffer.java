@@ -25,7 +25,8 @@ import grondag.canvas.pipeline.PipelineManager;
 
 public class FabulousFrameBuffer extends Framebuffer {
 	public FabulousFrameBuffer(int fboId, int colorId, int depthId) {
-		super(PipelineManager.width(), PipelineManager.height(), true, MinecraftClient.IS_SYSTEM_MAC);
+		super(true);
+		super.initFbo(PipelineManager.width(), PipelineManager.height(), MinecraftClient.IS_SYSTEM_MAC);
 		setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
 
 		fbo = fboId;

@@ -19,13 +19,12 @@ package grondag.canvas.render;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.minecraft.client.gl.Framebuffer;
-
 import grondag.canvas.pipeline.PipelineManager;
+import net.minecraft.client.gl.WindowFramebuffer;
 
-public class PrimaryFrameBuffer extends Framebuffer {
-	public PrimaryFrameBuffer(int width, int height, boolean getError) {
-		super(width, height, true, getError);
+public class PrimaryFrameBuffer extends WindowFramebuffer {
+	public PrimaryFrameBuffer(int width, int height) {
+		super(width, height);
 	}
 
 	@Override
