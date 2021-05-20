@@ -431,7 +431,7 @@ public abstract class MixinGlStateManager {
 	 * @author grondag
 	 * @reason nukem from space - it's only way to be sure
 	 */
-	@Overwrite(remap = false)
+	@Overwrite
 	@Nullable
 	public static ByteBuffer mapBuffer(int target, int access) {
 		return GFX.mapBuffer(target, access);
