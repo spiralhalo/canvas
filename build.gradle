@@ -11,14 +11,11 @@ plugins {
 	id "checkstyle"
 }
 
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
+
 tasks.withType(JavaCompile).configureEach {
-	def targetVersion = 8
-	if (JavaVersion.current().isJava9Compatible()) {
-		it.options.release = targetVersion
-	} else {
-		sourceCompatibility = JavaVersion.toVersion(targetVersion)
-		targetCompatibility = JavaVersion.toVersion(targetVersion)
-	}
+	it.options.release = 16
 }
 
 def ENV = System.getenv()
