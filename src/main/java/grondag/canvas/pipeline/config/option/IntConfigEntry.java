@@ -44,6 +44,10 @@ public class IntConfigEntry extends OptionConfigEntry<IntConfigEntry> {
 		value = defaultVal;
 	}
 
+	public int value() {
+		return value;
+	}
+
 	@Override
 	Option buildEntry(OptionSession optionSession) {
 		return optionSession.intOption(nameKey,

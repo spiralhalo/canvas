@@ -46,6 +46,10 @@ public class FloatConfigEntry extends OptionConfigEntry<FloatConfigEntry> {
 		value = defaultVal;
 	}
 
+	public float value() {
+		return value;
+	}
+
 	@Override
 	Option buildEntry(OptionSession optionSession) {
 		return optionSession.floatOption(nameKey,
