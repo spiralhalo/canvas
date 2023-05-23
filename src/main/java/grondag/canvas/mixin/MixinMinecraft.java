@@ -20,13 +20,16 @@
 
 package grondag.canvas.mixin;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.blaze3d.pipeline.MainTarget;
+import com.mojang.blaze3d.platform.Window;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -36,6 +39,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 
 import grondag.canvas.config.Configurator;
+import grondag.canvas.mixinterface.MinecraftExt;
 import grondag.canvas.render.PrimaryFrameBuffer;
 import grondag.canvas.render.world.CanvasWorldRenderer;
 import grondag.canvas.shader.GlProgramManager;
@@ -43,7 +47,9 @@ import grondag.canvas.varia.CanvasGlHelper;
 import grondag.canvas.varia.GFX;
 
 @Mixin(Minecraft.class)
-public abstract class MixinMinecraft extends ReentrantBlockableEventLoop<Runnable> {
+public abstract class MixinMinecraft extends ReentrantBlockableEventLoop<Runnable> implements MinecraftExt {
+	@Shadow @Final private Window window;
+
 	protected MixinMinecraft(String dummy) {
 		super(dummy);
 	}
@@ -74,5 +80,10 @@ public abstract class MixinMinecraft extends ReentrantBlockableEventLoop<Runnabl
 	@Redirect(method = "<init>*", at = @At(value = "NEW", target = "(II)Lcom/mojang/blaze3d/pipeline/MainTarget;"))
 	private MainTarget onFrameBufferNew(int width, int height) {
 		return new PrimaryFrameBuffer(width, height);
+	}
+
+	@Override
+	public Window canvas_getWindow() {
+		return window;
 	}
 }

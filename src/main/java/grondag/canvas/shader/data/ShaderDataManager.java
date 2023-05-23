@@ -171,6 +171,7 @@ import grondag.canvas.pipeline.PipelineManager;
 import grondag.canvas.varia.CelestialObjectFunction;
 import grondag.canvas.varia.CelestialObjectFunction.CelestialObjectInput;
 import grondag.canvas.varia.CelestialObjectFunction.CelestialObjectOutput;
+import grondag.canvas.varia.RenderdocHelper;
 
 public class ShaderDataManager {
 	private static int worldFlags;
@@ -411,6 +412,8 @@ public class ShaderDataManager {
 	 * @param entry
 	 */
 	public static void update(Pose entry, Matrix4f projectionMatrix, Camera camera) {
+		RenderdocHelper.startCapture(i -> renderFrames <= 1);
+
 		final Minecraft client = Minecraft.getInstance();
 		final Entity cameraEntity = camera.getEntity();
 		final float tickDelta = client.getFrameTime();

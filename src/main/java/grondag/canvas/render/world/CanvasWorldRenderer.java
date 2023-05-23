@@ -123,6 +123,7 @@ import grondag.canvas.terrain.region.RenderRegionStorage;
 import grondag.canvas.terrain.util.TerrainExecutor;
 import grondag.canvas.varia.GFX;
 import grondag.canvas.varia.MathHelper;
+import grondag.canvas.varia.RenderdocHelper;
 
 public class CanvasWorldRenderer extends LevelRenderer {
 	private static CanvasWorldRenderer instance;
