@@ -38,7 +38,6 @@ public class ListWidget extends ContainerObjectSelectionList<ListItem> {
 		// The workings of these coordinates are arcane by nature
 		super(Minecraft.getInstance(), width, height + y, y, height + y, ITEM_HEIGHT + ITEM_SPACING);
 		setRenderBackground(false);
-		setRenderTopAndBottom(false);
 		x0 = x;
 		x1 = x + width;
 		rowWidth = Math.min(300, width - 20);
@@ -50,14 +49,11 @@ public class ListWidget extends ContainerObjectSelectionList<ListItem> {
 	}
 
 	@Override
-	protected void renderBackground(GuiGraphics graphics) {
+	public void render(GuiGraphics graphics, int i, int j, float f) {
 		if (darkened) {
 			graphics.fill(x0, y0, x1, y1, 0x99000000);
 		}
-	}
 
-	@Override
-	public void render(GuiGraphics graphics, int i, int j, float f) {
 		super.render(graphics, i, j, f);
 
 		// Render top and bottom shadow over items but not scroll bar
@@ -65,16 +61,6 @@ public class ListWidget extends ContainerObjectSelectionList<ListItem> {
 		final int limit = hasScrollBar ? this.getScrollbarPosition() : this.x1;
 		graphics.fillGradient(this.x0, this.y0, limit, this.y0 + 4, -16777216, 0);
 		graphics.fillGradient(this.x0, this.y1 - 4, limit, this.y1, 0, -16777216);
-	}
-
-	/**
-	 * Magic taken directly from SpruceUI. MIT Licensed
-	 */
-	private static int adaptY(int y, int height, double guiScale) {
-		final var window = Minecraft.getInstance().getWindow();
-		final int tmpHeight = (int) (window.getHeight() / guiScale);
-		final int scaledHeight = window.getHeight() / guiScale > (double) tmpHeight ? tmpHeight + 1 : tmpHeight;
-		return (int) (guiScale * (scaledHeight - height - y));
 	}
 
 	@Override
@@ -96,7 +82,7 @@ public class ListWidget extends ContainerObjectSelectionList<ListItem> {
 	}
 
 	public int addItem(ListItem item) {
-		int i = addEntry(item);
+		final int i = addEntry(item);
 
 		item.clearWidgets();
 		item.createWidget(getRowLeft(), getRowTop(i) + ITEM_SPACING / 2, getRowWidth(), ITEM_HEIGHT);

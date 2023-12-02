@@ -65,6 +65,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -892,6 +893,11 @@ public class CanvasWorldRenderer extends LevelRenderer {
 	}
 
 	@Override
+	public void onChunkLoaded(ChunkPos chunkPos) {
+		// Whatever this is it's probably not good
+	}
+
+	@Override
 	public void allChanged() {
 		createImmediates();
 
@@ -912,20 +918,20 @@ public class CanvasWorldRenderer extends LevelRenderer {
 	}
 
 	@Override
-	public boolean hasRenderedAllChunks() {
+	public boolean hasRenderedAllSections() {
 		return worldRenderState.regionRebuildManager.isEmpty() && worldRenderState.regionBuilder().isEmpty() && !worldRenderState.terrainIterator.hasWork();
 	}
 
 	@Override
-	public int countRenderedChunks() {
+	public int countRenderedSections() {
 		return worldRenderState.cameraVisibleRegions.getActiveCount();
 	}
 
 	@Override
 	@SuppressWarnings("resource")
-	public String getChunkStatistics() {
+	public String getSectionStatistics() {
 		final int len = worldRenderState.renderRegionStorage.loadedRegionCount();
-		final int count = countRenderedChunks();
+		final int count = countRenderedSections();
 		String shadowRegionString = "";
 
 		if (worldRenderState.shadowsEnabled()) {
