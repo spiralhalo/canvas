@@ -33,7 +33,7 @@ import grondag.canvas.light.color.EntityLightTracker;
 @Mixin(ClientLevel.class)
 public class MixinClientLevel {
 	@Inject(method = "addEntity", at = @At("TAIL"))
-	void onAddEntity(int i, Entity entity, CallbackInfo ci) {
+	void onAddEntity(Entity entity, CallbackInfo ci) {
 		EntityLightTracker.levelAddsEntity(entity);
 	}
 
